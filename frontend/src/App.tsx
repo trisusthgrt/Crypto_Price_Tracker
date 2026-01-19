@@ -6,15 +6,19 @@ import './App.css'
 import { DashboardPage } from './pages/DashboardPage'
 import { AlertsPage } from './pages/AlertsPage'
 import { NotificationsPage } from './pages/NotificationsPage'
-import { listAlertEvents } from './api/client'
-import type { AlertEvent } from './api/types'
+import { fetchHealth, listAlertEvents } from './api/client'
+import type { AlertEvent, HealthResponse } from './api/types'
 import { ToastHost, type Toast } from './components/ToastHost'
 import { coinLabel } from './constants/coins'
-import { formatMoney, formatTime } from './utils/format'
+import { useOnlineStatus } from './hooks/useOnlineStatus'
+import { formatAgeShort, formatMoney, formatTime } from './utils/format'
 
 function App() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [health, setHealth] = useState<HealthResponse | null>(null)
+  const [healthError, setHealthError] = useState<string | null>(null)
+  const online = useOnlineStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -90,6 +94,29 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    async function refreshHealth() {
+      try {
+        const h = await fetchHealth()
+        if (cancelled) return
+        setHealth(h)
+        setHealthError(null)
+      } catch {
+        if (cancelled) return
+        setHealth(null)
+        setHealthError('API unreachable')
+      }
+    }
+
+    refreshHealth()
+    const t = window.setInterval(refreshHealth, 10_000)
+    return () => {
+      cancelled = true
+      window.clearInterval(t)
+    }
+  }, [])
+
   return (
     <div className="appShell">
       <header className="topbar">
@@ -120,6 +147,33 @@ function App() {
             {unreadCount > 0 ? <span className="badge">{unreadCount}</span> : null}
           </NavLink>
         </nav>
+
+        <div className="row" style={{ justifyContent: 'flex-end' }}>
+          {!online ? <span className="pill">Offline</span> : null}
+          <span
+            className="pill"
+            title={
+              health
+                ? `Upstream: ${health.upstream.provider} · vsCurrency: ${health.upstream.vsCurrency}`
+                : undefined
+            }
+          >
+            {health ? 'API: up' : `API: down`}
+          </span>
+          {health ? (
+            <>
+              <span className="pill">{health.mongoConnected ? 'Mongo: ok' : 'Mongo: down'}</span>
+              <span className="pill">
+                Poller:{' '}
+                {health.poller.lastSuccessAt
+                  ? formatAgeShort(health.poller.lastSuccessAt)
+                  : 'never'}
+              </span>
+            </>
+          ) : healthError ? (
+            <span className="pill">{healthError}</span>
+          ) : null}
+        </div>
       </header>
 
       <main className="content">

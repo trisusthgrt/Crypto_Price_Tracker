@@ -6,6 +6,7 @@ import { ChartPanel } from '../components/ChartPanel'
 import { PriceCards } from '../components/PriceCards'
 import { WatchlistSelector } from '../components/WatchlistSelector'
 import { useWatchlist } from '../hooks/useWatchlist'
+import { getErrorMessage } from '../utils/errors'
 
 export function DashboardPage() {
   const { watchlist, setWatchlist, coinOptions } = useWatchlist()
@@ -31,9 +32,9 @@ export function DashboardPage() {
         const res = await fetchLatestPrices({ coins: watchlist })
         if (cancelled) return
         setRows(res.data)
-      } catch {
+      } catch (e) {
         if (cancelled) return
-        setError('Failed to load prices. Check backend (/api/health) and CORS/proxy.')
+        setError(getErrorMessage(e))
       } finally {
         if (!cancelled) setLoading(false)
       }

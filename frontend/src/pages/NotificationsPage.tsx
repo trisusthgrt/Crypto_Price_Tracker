@@ -4,6 +4,7 @@ import { listAlertEvents, markAlertEventRead, markAlertEventsRead } from '../api
 import type { AlertEvent } from '../api/types'
 import { coinLabel } from '../constants/coins'
 import { formatMoney, formatTime } from '../utils/format'
+import { getErrorMessage } from '../utils/errors'
 
 export function NotificationsPage(props: { onUnreadCount: (n: number) => void }) {
   const { onUnreadCount } = props
@@ -18,8 +19,8 @@ export function NotificationsPage(props: { onUnreadCount: (n: number) => void })
       const res = await listAlertEvents({ unreadOnly: false, limit: 50 })
       setEvents(res.data)
       onUnreadCount(res.data.filter((e) => !e.read).length)
-    } catch {
-      setError('Failed to load alert events.')
+    } catch (e) {
+      setError(getErrorMessage(e))
     } finally {
       setLoading(false)
     }
@@ -41,8 +42,8 @@ export function NotificationsPage(props: { onUnreadCount: (n: number) => void })
     try {
       await markAlertEventsRead(unread.map((e) => e._id))
       await refresh()
-    } catch {
-      setError('Failed to mark read.')
+    } catch (e) {
+      setError(getErrorMessage(e))
     } finally {
       setLoading(false)
     }
@@ -108,8 +109,12 @@ function EventRow(props: { event: AlertEvent; onRead: () => void }) {
           <button
             className="btn"
             onClick={async () => {
-              await markAlertEventRead(event._id)
-              onRead()
+              try {
+                await markAlertEventRead(event._id)
+                onRead()
+              } catch {
+                // ignore here; page-level polling will keep state consistent
+              }
             }}
           >
             Mark read

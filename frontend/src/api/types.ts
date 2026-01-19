@@ -63,3 +63,24 @@ export type AlertEvent = {
   updatedAt: string
 }
 
+export type HealthResponse = {
+  ok: true
+  service: string
+  time: string
+  mongoConnected: boolean
+  upstream: {
+    provider: string
+    watchlist: string[]
+    vsCurrency: string
+  }
+  poller: {
+    enabled: boolean
+    intervalSeconds: number
+    running: boolean
+    lastAttemptAt: string | null
+    lastSuccessAt: string | null
+    lastErrorAt: string | null
+    lastErrorMessage: string | null
+  }
+}
+

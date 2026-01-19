@@ -5,6 +5,7 @@ import { fetchPriceHistory } from '../api/client'
 import type { HistoryPoint } from '../api/types'
 import { coinLabel } from '../constants/coins'
 import { formatMoney } from '../utils/format'
+import { getErrorMessage } from '../utils/errors'
 
 type Range = '1h' | '6h' | '24h' | '7d' | '30d'
 type Bucket = '10s' | '30s' | '1m' | '5m' | '15m' | '1h'
@@ -40,7 +41,7 @@ export function ChartPanel(props: { coinId: string; vsCurrency?: string }) {
         setData(res.data)
       } catch (e) {
         if (cancelled) return
-        setError('Failed to load chart data. Check backend + Mongo connection.')
+        setError(getErrorMessage(e))
       } finally {
         if (!cancelled) setLoading(false)
       }

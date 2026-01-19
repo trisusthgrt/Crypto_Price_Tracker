@@ -3,6 +3,7 @@ import axios from 'axios'
 import type {
   AlertEvent,
   AlertRule,
+  HealthResponse,
   HistoryResponse,
   LatestPricesResponse,
 } from './types'
@@ -13,6 +14,11 @@ export const http = axios.create({
   baseURL,
   timeout: 15_000,
 })
+
+export async function fetchHealth() {
+  const res = await http.get<HealthResponse>('/api/health')
+  return res.data
+}
 
 export async function fetchLatestPrices(params: {
   coins: string[]

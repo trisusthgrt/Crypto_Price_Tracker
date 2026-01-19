@@ -5,6 +5,7 @@ import type { AlertRule } from '../api/types'
 import { WatchlistSelector } from '../components/WatchlistSelector'
 import { coinLabel } from '../constants/coins'
 import { useWatchlist } from '../hooks/useWatchlist'
+import { getErrorMessage } from '../utils/errors'
 
 export function AlertsPage() {
   const { watchlist, coinOptions, setWatchlist } = useWatchlist()
@@ -23,8 +24,8 @@ export function AlertsPage() {
     try {
       const res = await listAlerts()
       setAlerts(res.data)
-    } catch {
-      setError('Failed to load alerts.')
+    } catch (e) {
+      setError(getErrorMessage(e))
     } finally {
       setLoading(false)
     }
@@ -62,8 +63,8 @@ export function AlertsPage() {
         active: true,
       })
       await refresh()
-    } catch {
-      setError('Failed to create alert. Check backend + Mongo.')
+    } catch (e) {
+      setError(getErrorMessage(e))
     } finally {
       setLoading(false)
     }
