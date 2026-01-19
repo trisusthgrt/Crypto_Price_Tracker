@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
-// IMPORTANT (ESM): ensure .env is loaded before reading process.env in this module.
 dotenv.config({ quiet: true })
 
 const envSchema = z.object({
@@ -18,12 +17,10 @@ const envSchema = z.object({
   POLL_INTERVAL_SECONDS: z.coerce.number().int().positive().default(20),
   POLL_ENABLED: z.coerce.boolean().default(true),
 
-  // Retention + write volume controls
   PRICE_POINT_RETENTION_DAYS: z.coerce.number().int().positive().default(7),
   PRICE_POINT_BUCKET_SECONDS: z.coerce.number().int().positive().default(60),
   PRICE_POINT_CLEANUP_ENABLED: z.coerce.boolean().default(true),
 
-  // Hardening (CORS / logging / rate limit)
   CORS_ORIGINS: z.string().optional(),
   LOG_REQUESTS: z.coerce.boolean().default(true),
   RATE_LIMIT_ENABLED: z.coerce.boolean().default(false),
@@ -46,7 +43,6 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env)
 
 if (!parsed.success) {
-  // eslint-disable-next-line no-console
   console.error('Invalid environment configuration:', parsed.error.flatten())
   throw new Error('Invalid environment configuration')
 }

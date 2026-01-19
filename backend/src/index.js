@@ -93,7 +93,6 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
-// Foundation demo: shows axios + zod wired up (we'll replace with real price routes later).
 app.get('/api/demo/validate', (req, res) => {
   const parsed = coinIdSchema.safeParse(req.query.coin)
   if (!parsed.success) {
@@ -102,7 +101,6 @@ app.get('/api/demo/validate', (req, res) => {
   return res.json({ ok: true, coin: parsed.data })
 })
 
-// Step 2 implementation: fetch from selected upstream provider for configured watchlist.
 app.get('/api/prices/upstream/latest', async (req, res) => {
   const coinsRaw = typeof req.query.coins === 'string' ? req.query.coins : undefined
   const coins = coinsRaw
@@ -125,7 +123,6 @@ app.get('/api/prices/upstream/latest', async (req, res) => {
   })
 })
 
-// Step 2 (cache-first): Latest prices read from MongoDB cache.
 app.get('/api/prices/latest', async (req, res) => {
   if (!ensureMongoConnected(res)) return
   const coins = parseCoinsQuery(req.query.coins)
@@ -140,7 +137,6 @@ app.get('/api/prices/latest', async (req, res) => {
   }
 })
 
-// Step 2 (cache-first): History points read from MongoDB for charts.
 app.get('/api/prices/history', async (req, res) => {
   if (!ensureMongoConnected(res)) return
   const coinParsed = coinIdSchema.safeParse(req.query.coin)
@@ -223,7 +219,6 @@ app.patch('/api/alerts/:id', async (req, res) => {
 
   const set = { ...bodyParsed.data }
 
-  // If threshold changes, reset state so next tick establishes a fresh baseline.
   if (typeof bodyParsed.data.threshold === 'number') {
     set.lastState = 'unknown'
   }
@@ -329,7 +324,6 @@ app.post('/api/alert-events/mark-read', async (req, res) => {
   })
 })
 
-// Optional realtime: Server-Sent Events stream for prices + alert events.
 app.get('/api/stream', async (req, res) => {
   if (!ensureMongoConnected(res)) return
 
@@ -370,8 +364,7 @@ app.get('/api/stream', async (req, res) => {
         .exec()
       send('prices', { time: new Date().toISOString(), data: prices })
 
-      // Stream all alert events for this currency (don't restrict by coins),
-      // otherwise clients may miss events for coins outside the backend watchlist.
+     
       const eventFilter = { vsCurrency }
       if (lastEventId) eventFilter._id = { $gt: lastEventId }
 
@@ -410,26 +403,21 @@ app.use(errorHandler)
 async function start() {
   await connectToMongo({ optional: true })
 
-  // Scheduler foundation: runs every minute (placeholder).
   cron.schedule('* * * * *', () => {
-    // Later: fetch prices, cache in Mongo, evaluate alerts.
-    // Keeping it lightweight for now to prove scheduling works.
-    // eslint-disable-next-line no-console
+    
     console.log(`[cron] heartbeat ${new Date().toISOString()}`)
   })
 
-  // Retention safety-net (TTL also exists, but cleanup helps keep DB tidy).
   cron.schedule('0 * * * *', async () => {
     if (!config.pricePointCleanupEnabled) return
     if (mongoose.connection.readyState !== 1) return
     try {
       const r = await cleanupOldPricePoints()
-      // eslint-disable-next-line no-console
       console.log(
         `[retention] deleted=${r.deletedCount} cutoff=${r.cutoff.toISOString()}`,
       )
     } catch (err) {
-      // eslint-disable-next-line no-console
+      
       console.warn('[retention] cleanup failed:', err)
     }
   })
@@ -437,7 +425,6 @@ async function start() {
   startPricePoller({ state: pollerState })
 
   app.listen(config.port, () => {
-    // eslint-disable-next-line no-console
     console.log(`API listening on http://localhost:${config.port}`)
   })
 }

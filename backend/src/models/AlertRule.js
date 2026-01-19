@@ -16,7 +16,7 @@ const AlertRuleSchema = new mongoose.Schema(
 
     cooldownMinutes: { type: Number, required: true, default: 0 },
 
-    // Used to prevent spamming + detect crossing cleanly.
+   
     lastTriggeredAt: { type: Date, required: false, default: null },
     lastState: {
       type: String,

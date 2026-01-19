@@ -94,8 +94,7 @@ export async function refreshLatestPrices({ coinIds, vsCurrency } = {}) {
       },
     })
 
-    // Bucketed history: one point per (coinId, vsCurrency, bucketTs).
-    // This reduces DB size when polling frequently.
+   
     pointOps.push({
       updateOne: {
         filter: { coinId: row.coinId, vsCurrency: row.vsCurrency, ts: bucketTs },
@@ -164,7 +163,6 @@ export async function getLatestPricesCacheFirst({ coinIds, vsCurrency } = {}) {
     }
   }
 
-  // Normalize response order to match requested coins.
   const normalized = []
   const docMap = new Map(docs.map((d) => [d.coinId, d]))
   for (const coinId of coins) {
@@ -211,12 +209,10 @@ export async function getPriceHistoryCacheFirst({
     .lean()
     .exec()
 
-  // If no data at all, attempt a one-shot refresh (helps first-run UX).
   if (!points.length) {
     try {
       await refreshLatestPrices({ coinIds: [coinId], vsCurrency: currency })
     } catch {
-      // ignore; we'll return empty history
     }
   }
 
@@ -245,7 +241,6 @@ export async function getPriceHistoryCacheFirst({
   const buckets = new Map()
   for (const p of pointsAfter) {
     const b = bucketTimestamp(p.ts, bucketMs).toISOString()
-    // Keep the latest point in each bucket.
     buckets.set(b, { ts: new Date(b), price: p.price })
   }
 

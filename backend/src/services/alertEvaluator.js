@@ -22,11 +22,7 @@ function canTriggerCooldown({ cooldownMinutes, lastTriggeredAt, now }) {
   return elapsedMs >= cd * 60 * 1000
 }
 
-/**
- * Evaluate active alert rules for coins using prev vs current cached prices.
- * - prevPricesByCoin: Map<string, number> (previous cached prices BEFORE refresh)
- * - nowPricesByCoin: Map<string, number> (current cached prices AFTER refresh)
- */
+
 export async function evaluateAlertsForCoins({
   coinIds,
   vsCurrency,
@@ -86,7 +82,6 @@ export async function evaluateAlertsForCoins({
         },
       })
     } else {
-      // Keep state updated even when no trigger (or when prev missing / cooldown).
       ruleUpdates.push({
         updateOne: {
           filter: { _id: rule._id },

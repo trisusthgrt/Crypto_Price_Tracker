@@ -8,7 +8,7 @@ function normalizeError(err) {
     }
   }
 
-  // Express JSON parse errors often have a "type" or "status".
+  
   const status =
     typeof err?.status === 'number'
       ? err.status
@@ -41,7 +41,6 @@ export function notFoundHandler(req, res) {
   })
 }
 
-// eslint-disable-next-line no-unused-vars
 export function errorHandler(err, _req, res, _next) {
   const normalized = normalizeError(err)
   res.status(normalized.status).json(normalized.body)

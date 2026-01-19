@@ -12,10 +12,7 @@ function chunk(arr, size) {
   return out
 }
 
-/**
- * Fetch latest prices from CoinGecko.
- * Note: CoinGecko uses "ids" (e.g. bitcoin, ethereum), not symbols (BTC, ETH).
- */
+
 export async function fetchCoinGeckoLatestPrices({
   apiBase,
   coinIds,
@@ -24,7 +21,6 @@ export async function fetchCoinGeckoLatestPrices({
 }) {
   if (!coinIds?.length) return []
 
-  // CoinGecko supports batching; chunk to be safe.
   const batches = chunk(coinIds, 200)
 
   const results = []
@@ -50,7 +46,6 @@ export async function fetchCoinGeckoLatestPrices({
       const change24h = obj[`${vsCurrency}_24h_change`]
       const lastUpdatedAt = obj.last_updated_at
 
-      // CoinGecko may omit fields; normalize defensively.
       results.push({
         coinId,
         vsCurrency,

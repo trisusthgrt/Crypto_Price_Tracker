@@ -18,7 +18,6 @@ export function createPollerState() {
 
 export function startPricePoller({ state }) {
   if (!config.pollEnabled) {
-    // eslint-disable-next-line no-console
     console.log('Price poller disabled (POLL_ENABLED=false).')
     return () => {}
   }
@@ -33,7 +32,6 @@ export function startPricePoller({ state }) {
     state.lastAttemptAt = new Date()
 
     try {
-      // Always include coins that have active alert rules, so alerts can trigger reliably.
       const activeAlertCoins = await AlertRule.distinct('coinId', {
         active: true,
         vsCurrency: config.vsCurrency,
@@ -43,7 +41,6 @@ export function startPricePoller({ state }) {
         new Set([...(config.coinWatchlist ?? []), ...(activeAlertCoins ?? [])]),
       )
 
-      // Snapshot previous cached prices (for crossing detection).
       const prevDocs = await LatestPrice.find({
         coinId: { $in: coinsToPoll },
         vsCurrency: config.vsCurrency,
@@ -57,7 +54,6 @@ export function startPricePoller({ state }) {
         vsCurrency: config.vsCurrency,
       })
 
-      // Snapshot current cached prices after refresh.
       const nowDocs = await LatestPrice.find({
         coinId: { $in: coinsToPoll },
         vsCurrency: config.vsCurrency,
@@ -85,11 +81,9 @@ export function startPricePoller({ state }) {
     }
   }
 
-  // Run once shortly after startup, then interval.
   const startupTimer = setTimeout(tick, 1_000)
   const interval = setInterval(tick, intervalMs)
 
-  // eslint-disable-next-line no-console
   console.log(`Price poller running every ${config.pollIntervalSeconds}s`)
 
   return () => {

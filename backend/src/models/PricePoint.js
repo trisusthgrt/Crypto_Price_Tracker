@@ -13,10 +13,8 @@ const PricePointSchema = new mongoose.Schema(
   { timestamps: true },
 )
 
-// Efficient chart queries by coin + time range.
 PricePointSchema.index({ coinId: 1, vsCurrency: 1, ts: 1 }, { unique: true })
 
-// Retention (keeps DB small): auto-delete after N days.
 PricePointSchema.index(
   { ts: 1 },
   { expireAfterSeconds: 60 * 60 * 24 * config.pricePointRetentionDays },

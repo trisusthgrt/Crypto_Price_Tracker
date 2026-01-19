@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// Example Zod schema (foundation). We'll use this pattern for request validation.
 export const coinIdSchema = z
   .string()
   .min(1)

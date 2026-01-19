@@ -30,7 +30,6 @@ export function NotificationsPage(props: { onUnreadCount: (n: number) => void })
     refresh()
     const t = window.setInterval(refresh, 10_000)
     return () => window.clearInterval(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const unread = useMemo(() => events.filter((e) => !e.read), [events])

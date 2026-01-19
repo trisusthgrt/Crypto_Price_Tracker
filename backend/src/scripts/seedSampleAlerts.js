@@ -11,7 +11,6 @@ await connectToMongo({ optional: false })
 
 const existing = await AlertRule.countDocuments().exec()
 if (existing > 0) {
-  // eslint-disable-next-line no-console
   console.log(
     `Seed skipped: AlertRule already has ${existing} document(s). Delete them if you want to re-seed.`,
   )
@@ -29,7 +28,6 @@ const docs = []
 for (const row of latest) {
   if (typeof row.price !== 'number' || !Number.isFinite(row.price)) continue
 
-  // Choose thresholds close to current price so they’re likely to trigger soon.
   const above = Number((row.price * 1.002).toFixed(2))
   const below = Number((row.price * 0.998).toFixed(2))
 
@@ -59,13 +57,11 @@ for (const row of latest) {
 }
 
 if (!docs.length) {
-  // eslint-disable-next-line no-console
   console.log('Seed failed: could not fetch any upstream prices.')
   process.exit(1)
 }
 
 await AlertRule.insertMany(docs, { ordered: false })
 
-// eslint-disable-next-line no-console
 console.log(`Seeded ${docs.length} alert rule(s) for coins: ${coins.join(', ')}`)
 
