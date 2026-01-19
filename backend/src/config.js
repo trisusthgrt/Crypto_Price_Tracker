@@ -1,4 +1,8 @@
+import dotenv from 'dotenv'
 import { z } from 'zod'
+
+// IMPORTANT (ESM): ensure .env is loaded before reading process.env in this module.
+dotenv.config({ quiet: true })
 
 const envSchema = z.object({
   PORT: z.string().optional(),
